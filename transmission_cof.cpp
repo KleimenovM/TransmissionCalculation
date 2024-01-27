@@ -1,8 +1,4 @@
-float rad2deg(float angle){
-	return angle / 180 * TMath::Pi();
-}
-
-void transmission_cof() {
+{
 	// ---------------
 	// TRANSMISSION COEFFICIENTS
 	// ---------------
@@ -12,20 +8,23 @@ void transmission_cof() {
 	// ---------------
 	// MC EVENTS
 	// ---------------
-	std::unique_ptr<TFile> file( TFile::Open("simulated_events.root") );
+	std::unique_ptr<TFile> file( TFile::Open("simulated_events.root", "UPDATE") );
 	auto eventsTuple = file->Get<TNtuple>("ntuple");
 	
 	// disable all the branches
-	eventsTuple->SetBranchStatus("*", false);
+	// eventsTuple->SetBranchStatus("*", false);
 	// enable the needed branches
-	eventsTuple->SetBranchStatus("fPrimaryParticleEnergy", true);
-	eventsTuple->SetBranchStatus("fZenithMC", true);
+	// eventsTuple->SetBranchStatus("fPrimaryParticleEnergy", true);
+	// eventsTuple->SetBranchStatus("fZenithMC", true);
+	// eventsTuple->SetBranchStatus("pEarth", true);
 	
 	// set the needed variables
 	float energy;
 	eventsTuple->SetBranchAddress("fPrimaryParticleEnergy", &energy);
 	float angle;
 	eventsTuple->SetBranchAddress("fZenithMC", &angle); 
+	float transmissionCof;
+	eventsTuple->SetBranchAddress("pEarth", &transmissionCof); 
 	
 	auto nEntries = eventsTuple->GetEntries();
 	
@@ -36,7 +35,10 @@ void transmission_cof() {
    		// load data for the given tree entry
    		eventsTuple->GetEntry(iEntry);
    		
-   		printf("%f\n", hist->GetBinContent(log10(energy), rad2deg(angle)));
+		transmissionCof = hist->GetBinContent(log10(energy), angle);
+		printf("%f\n", transmissionCof);	
    	}
-
+   	
+   	eventsTuple->Write("", TObject::kOverwrite)
+   		
 }
