@@ -1,16 +1,17 @@
 import ROOT as rt
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def modify():
     filename = "simulated_events.root"
 
-    file = rt.TFile.Open(filename)
+    myFile = rt.TFile.Open(filename, "READ")
+    myTree = myFile.ntuple
 
-    data = file.Get("ntuple")
-
-    data.Draw("log10(fPrimaryParticleEnergy)")  # log10 (neutrino energy in GeV)
-
-    input("Press any key to quit: ")
+    data = []
+    for entry in myTree:
+        data.append(np.log10(entry.fPrimaryParticleEnergy))
 
     return
 
