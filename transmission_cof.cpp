@@ -12,33 +12,50 @@
 	auto eventsTuple = file->Get<TNtuple>("ntuple");
 	
 	// disable all the branches
-	// eventsTuple->SetBranchStatus("*", false);
+	eventsTuple->SetBranchStatus("*", false);
 	// enable the needed branches
-	// eventsTuple->SetBranchStatus("fPrimaryParticleEnergy", true);
-	// eventsTuple->SetBranchStatus("fZenithMC", true);
-	// eventsTuple->SetBranchStatus("pEarth", true);
+	eventsTuple->SetBranchStatus("fPrimaryParticleEnergy", true);
+	eventsTuple->SetBranchStatus("fZenithMC", true);
 	
 	// set the needed variables
-	float energy;
+	Float_t energy;
 	eventsTuple->SetBranchAddress("fPrimaryParticleEnergy", &energy);
-	float angle;
+	Float_t angle;
 	eventsTuple->SetBranchAddress("fZenithMC", &angle); 
-	float transmissionCof;
-	eventsTuple->SetBranchAddress("pEarth", &transmissionCof); 
+	// Float_t transmissionCof;
+	// eventsTuple->SetBranchAddress("pEarth", &transmissionCof); 
 	
-	auto nEntries = eventsTuple->GetEntries();
+	Float_t new_v;
+	auto newBranch = eventsTuple->Branch("new_v", &new_v, "new_v/F");
+	
+	Long64_t nEntries = eventsTuple->GetEntries();
 	
 	// ---------------
 	// ADD TRANSMISSION COEFFICIENTS	
 	// ---------------
-	for (int iEntry = 0; iEntry < nEntries; ++iEntry) {
+	for (Long64_t iEntry = 0; iEntry < nEntries; ++iEntry) {
    		// load data for the given tree entry
    		eventsTuple->GetEntry(iEntry);
    		
-		transmissionCof = hist->GetBinContent(log10(energy), angle);
-		printf("%f\n", transmissionCof);	
+   		auto lgE = log10(energy);
+   		
+   		// if neutrino comes from the "top" or has very low energy
+   		if (angle < 90 || lgE < 3){ new_v = 1.0; }
+   		// if neutrino has extremely high energy
+   		else if (lgE > 10){ new_v = 0.0; }
+   		else
+   		{	
+			auto iBin = hist->FindBin(lgE, angle);
+			new_v = hist->GetBinContent(iBin);  			
+		}
+		
+		printf("%f\t", lgE);
+   		printf("%f\t", angle);
+   		printf("%f\n", new_v); 
+				
+		newBranch->Fill();
    	}
    	
-   	eventsTuple->Write("", TObject::kOverwrite)
+   	eventsTuple->Write("", TObject::kOverwrite); // save only the new version of the tree
    		
 }
