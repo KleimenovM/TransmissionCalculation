@@ -22,9 +22,7 @@
 	eventsTuple->SetBranchAddress("fPrimaryParticleEnergy", &energy);
 	Float_t angle;
 	eventsTuple->SetBranchAddress("fZenithMC", &angle); 
-	// Float_t transmissionCof;
-	// eventsTuple->SetBranchAddress("pEarth", &transmissionCof); 
-	
+
 	Float_t new_v;
 	auto newBranch = eventsTuple->Branch("new_v", &new_v, "new_v/F");
 	
@@ -48,11 +46,7 @@
 			auto iBin = hist->FindBin(lgE, angle);
 			new_v = hist->GetBinContent(iBin);  			
 		}
-		
-		printf("%f\t", lgE);
-   		printf("%f\t", angle);
-   		printf("%f\n", new_v); 
-				
+
 		newBranch->Fill();
    	}
    	
